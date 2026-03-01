@@ -111,3 +111,11 @@ fabric.properties
 *.iml
 out
 gen
+
+# Maven
+target/
+*.flattened-pom.xml
+dependency-reduced-pom.xml
+
+# Submodule build artifacts
+parallel-consumer/target/
