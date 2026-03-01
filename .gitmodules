@@ -1,0 +1,4 @@
+[submodule "parallel-consumer"]
+	path = parallel-consumer
+	url = https://github.com/Add0z/parallel-consumer.git
+	branch = features/enable-virtual-threads

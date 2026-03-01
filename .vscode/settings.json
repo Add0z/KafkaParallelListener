@@ -1,0 +1,7 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.maven.enabled": true,
+    "java.configuration.maven.defaultMojoExecutionAction": "execute",
+    "maven.executable.path": "${workspaceFolder}/parallel-consumer/mvnw"
+}
