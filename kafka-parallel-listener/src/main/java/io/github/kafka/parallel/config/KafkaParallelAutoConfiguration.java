@@ -1,11 +1,5 @@
 package io.github.kafka.parallel.config;
 
-import io.confluent.parallelconsumer.ParallelConsumerOptions;
-import io.confluent.parallelconsumer.ParallelStreamProcessor;
-import io.github.kafka.parallel.annotation.KafkaParallelListener;
-import io.github.kafka.parallel.processor.KafkaParallelListenerProcessor;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.producer.Producer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -14,6 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.ProducerFactory;
+
+import io.confluent.parallelconsumer.ParallelStreamProcessor;
+import io.github.kafka.parallel.annotation.KafkaParallelListener;
+import io.github.kafka.parallel.processor.KafkaParallelListenerProcessor;
 
 @AutoConfiguration
 @ConditionalOnClass({ParallelStreamProcessor.class, KafkaParallelListener.class})

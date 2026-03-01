@@ -1,11 +1,9 @@
 package io.github.kafka.parallel.processor;
 
-import io.confluent.parallelconsumer.ParallelConsumerOptions;
-import io.confluent.parallelconsumer.ParallelStreamProcessor;
-import io.github.kafka.parallel.annotation.KafkaParallelListener;
-import io.github.kafka.parallel.config.KafkaParallelProperties;
+import java.lang.reflect.Method;
+import java.util.Collections;
+
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.producer.Producer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -14,24 +12,32 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Properties;
+import io.confluent.parallelconsumer.ParallelConsumerOptions;
+import io.confluent.parallelconsumer.ParallelStreamProcessor;
+import io.github.kafka.parallel.annotation.KafkaParallelListener;
+import io.github.kafka.parallel.config.KafkaParallelProperties;
 
 public class KafkaParallelListenerProcessor implements BeanPostProcessor, ApplicationContextAware {
 
     private final KafkaParallelProperties properties;
-    private final KafkaListenerContainerFactory<?> kafkaListenerContainerFactory;
     private final ConsumerFactory<Object, Object> consumerFactory;
     private final ProducerFactory<Object, Object> producerFactory;
+
+    // TODO: use for proper listener container lifecycle management (start, stop,
+    // pause on rebalance)
+    private final KafkaListenerContainerFactory<?> kafkaListenerContainerFactory;
+
+    // TODO: use for resolving SpEL expressions and ${...} property placeholders in
+    // annotation attributes
     private ApplicationContext applicationContext;
 
     public KafkaParallelListenerProcessor(KafkaParallelProperties properties,
-                                          KafkaListenerContainerFactory<?> kafkaListenerContainerFactory,
-                                          ConsumerFactory<Object, Object> consumerFactory,
-                                          ProducerFactory<Object, Object> producerFactory) {
+            KafkaListenerContainerFactory<?> kafkaListenerContainerFactory,
+            ConsumerFactory<Object, Object> consumerFactory,
+            ProducerFactory<Object, Object> producerFactory) {
         this.properties = properties;
         this.kafkaListenerContainerFactory = kafkaListenerContainerFactory;
         this.consumerFactory = consumerFactory;
@@ -39,12 +45,12 @@ public class KafkaParallelListenerProcessor implements BeanPostProcessor, Applic
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
         Class<?> targetClass = bean.getClass();
         ReflectionUtils.doWithMethods(targetClass, method -> {
             KafkaParallelListener annotation = AnnotationUtils.findAnnotation(method, KafkaParallelListener.class);
@@ -58,7 +64,7 @@ public class KafkaParallelListenerProcessor implements BeanPostProcessor, Applic
     private void processListener(Object bean, Method method, KafkaParallelListener annotation) {
         // 1. Create Kafka Consumer
         Consumer<Object, Object> consumer = consumerFactory.createConsumer();
-        consumer.subscribe(Collections.singletonList(annotation.topics()[0])); // Simplified for example
+        consumer.subscribe(Collections.singletonList(annotation.topics()[0]));
 
         // 2. Create Parallel Consumer Options
         ParallelConsumerOptions.ProcessingOrder order = convertOrder(annotation.ordering());
@@ -85,14 +91,10 @@ public class KafkaParallelListenerProcessor implements BeanPostProcessor, Applic
     }
 
     private ParallelConsumerOptions.ProcessingOrder convertOrder(KafkaParallelListener.Ordering ordering) {
-        switch (ordering) {
-            case PARTITION:
-                return ParallelConsumerOptions.ProcessingOrder.PARTITION;
-            case UNORDERED:
-                return ParallelConsumerOptions.ProcessingOrder.UNORDERED;
-            case KEY:
-            default:
-                return ParallelConsumerOptions.ProcessingOrder.KEY;
-        }
+        return switch (ordering) {
+            case PARTITION -> ParallelConsumerOptions.ProcessingOrder.PARTITION;
+            case UNORDERED -> ParallelConsumerOptions.ProcessingOrder.UNORDERED;
+            default -> ParallelConsumerOptions.ProcessingOrder.KEY;
+        };
     }
 }

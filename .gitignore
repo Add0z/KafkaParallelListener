@@ -120,3 +120,5 @@ dependency-reduced-pom.xml
 # Submodule build artifacts
 parallel-consumer/target/
 .vscode/
+!kafka-parallel-listener/libs/*.jar
+kafka-parallel-listener/src/main/java/io/github/kafka/parallel/.DS_Store
