@@ -38,16 +38,8 @@
             <groupId>io.confluent.parallelconsumer</groupId>
             <artifactId>parallel-consumer-core</artifactId>
             <version>0.5.3.4-SNAPSHOT</version>
-            <!--
-                Option A: if built locally via `mvn install`, remove scope/systemPath
-                          and it will be found in ~/.m2 automatically.
-
-                Option B: if using a bundled jar in libs/ folder, uncomment below:
-            -->
-            <!--
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/parallel-consumer-core-0.5.3.4-SNAPSHOT.jar</systemPath>
-            -->
         </dependency>
 
         <!-- Autoconfiguration annotation processor -->
