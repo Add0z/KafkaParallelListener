@@ -17,34 +17,24 @@ Standard `@KafkaListener` is limited by partition count:
 
 ## Quick Start
 
-### 1. Add dependencies to your `pom.xml`
+### 1. Clone and install the library locally
+
+```bash
+git clone https://github.com/Add0z/KafkaParallelListener
+cd KafkaParallelListener
+mvn install -DskipTests
+```
+
+> This also installs the bundled `parallel-consumer-core` fork (built from [PR#908](https://github.com/confluentinc/parallel-consumer/pull/908) with Java 21 fixes) into your local Maven repository automatically.
+
+### 2. Add to your project's `pom.xml`
 
 ```xml
 <dependency>
-    <groupId>org.springframework.kafka</groupId>
-    <artifactId>spring-kafka</artifactId>
+    <groupId>io.github.kafka.parallel</groupId>
+    <artifactId>kafka-parallel-listener</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
-
-<!-- Built locally from: https://github.com/devingryu/parallel-consumer/tree/features/enable-virtual-threads -->
-<dependency>
-    <groupId>io.confluent.parallelconsumer</groupId>
-    <artifactId>parallel-consumer-core</artifactId>
-    <version>0.5.3.4-SNAPSHOT</version>
-</dependency>
-```
-
-### 2. Copy the 4 core files into your project
-
-```
-src/main/java/io/github/kafka/parallel/
-├── annotation/KafkaParallelListener.java      ← the annotation
-├── config/KafkaParallelAutoConfiguration.java ← Spring Boot autoconfiguration
-├── config/KafkaParallelProperties.java        ← application.yml properties
-├── exception/TerminalProcessingException.java ← skip retries, go to DLQ
-└── processor/KafkaParallelListenerProcessor.java ← the engine
-
-src/main/resources/META-INF/spring/
-└── org.springframework.boot.autoconfigure.AutoConfiguration.imports ← registers autoconfiguration
 ```
 
 ### 3. Configure `application.yml`
@@ -89,6 +79,8 @@ public class MyConsumer {
     }
 }
 ```
+
+No additional configuration needed — Spring Boot autoconfiguration wires everything up automatically.
 
 ## Annotation Options
 
@@ -144,3 +136,10 @@ kafka:
 
 This removes the thread pool overhead entirely — each message gets its own virtual thread,
 making blocking I/O essentially free.
+
+## Dependencies
+
+- Java 21+
+- Spring Boot 3.2+
+- Spring Kafka
+- [Confluent Parallel Consumer PR#908 fork](https://github.com/Add0z/parallel-consumer/tree/features/enable-virtual-threads) (bundled in `libs/`)
