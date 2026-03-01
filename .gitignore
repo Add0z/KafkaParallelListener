@@ -1,4 +1,7 @@
 ### Java template
+# macOS
+.DS_Store
+
 # Compiled class file
 *.class
 
@@ -122,3 +125,4 @@ parallel-consumer/target/
 .vscode/
 !kafka-parallel-listener/libs/*.jar
 kafka-parallel-listener/src/main/java/io/github/kafka/parallel/.DS_Store
+kafka-parallel-listener/src/main/resources/META-INF/.DS_Store

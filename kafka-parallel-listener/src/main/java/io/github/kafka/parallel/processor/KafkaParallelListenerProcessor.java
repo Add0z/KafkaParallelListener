@@ -1,10 +1,14 @@
 package io.github.kafka.parallel.processor;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -26,12 +30,10 @@ public class KafkaParallelListenerProcessor implements BeanPostProcessor, Applic
     private final ConsumerFactory<Object, Object> consumerFactory;
     private final ProducerFactory<Object, Object> producerFactory;
 
-    // TODO: use for proper listener container lifecycle management (start, stop,
-    // pause on rebalance)
+    // TODO: use for proper listener container lifecycle management (start, stop, pause on rebalance)
     private final KafkaListenerContainerFactory<?> kafkaListenerContainerFactory;
 
-    // TODO: use for resolving SpEL expressions and ${...} property placeholders in
-    // annotation attributes
+    // TODO: use for resolving SpEL expressions and ${...} property placeholders in annotation attributes
     private ApplicationContext applicationContext;
 
     public KafkaParallelListenerProcessor(KafkaParallelProperties properties,
@@ -55,10 +57,44 @@ public class KafkaParallelListenerProcessor implements BeanPostProcessor, Applic
         ReflectionUtils.doWithMethods(targetClass, method -> {
             KafkaParallelListener annotation = AnnotationUtils.findAnnotation(method, KafkaParallelListener.class);
             if (annotation != null) {
+                validateDeserializerCompatibility(method, consumerFactory);
                 processListener(bean, method, annotation);
             }
         });
         return bean;
+    }
+
+    private void validateDeserializerCompatibility(Method method, ConsumerFactory<?, ?> consumerFactory) {
+        Type genericType = method.getGenericParameterTypes().length > 0
+                ? method.getGenericParameterTypes()[0]
+                : null;
+
+        if (!(genericType instanceof ParameterizedType pt)) return;
+
+        // extrai o V de ConsumerRecord<K, V>
+        Type[] typeArgs = pt.getActualTypeArguments();
+        if (typeArgs.length < 2) return;
+
+        Class<?> valueType = (Class<?>) typeArgs[1];
+
+        String valueDeserializer = String.valueOf(
+                consumerFactory.getConfigurationProperties()
+                        .get(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG));
+
+        if (valueDeserializer.contains("Avro") && !isSpecificAvroReaderEnabled(consumerFactory)) {
+            throw new BeanCreationException(
+                    "[@KafkaParallelListener] Method '" + method.getName() + "' expects value type '"
+                    + valueType.getSimpleName() + "' but KafkaAvroDeserializer is configured without "
+                    + "'specific.avro.reader=true'. The deserializer will return GenericRecord instead of "
+                    + valueType.getSimpleName() + ", causing a ClassCastException at runtime. "
+                    + "Add 'specific.avro.reader: true' to your consumer properties.");
+        }
+    }
+
+    private boolean isSpecificAvroReaderEnabled(ConsumerFactory<?, ?> consumerFactory) {
+        Object value = consumerFactory.getConfigurationProperties()
+                .get("specific.avro.reader");
+        return Boolean.TRUE.equals(value) || "true".equalsIgnoreCase(String.valueOf(value));
     }
 
     private void processListener(Object bean, Method method, KafkaParallelListener annotation) {
