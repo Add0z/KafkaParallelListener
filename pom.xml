@@ -4,83 +4,41 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
-    </parent>
-
     <groupId>io.github.kafka.parallel</groupId>
-    <artifactId>kafka-parallel-listener</artifactId>
+    <artifactId>kafka-parallel-listener-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>Kafka Parallel Listener</name>
-    <description>@KafkaParallelListener annotation backed by Confluent Parallel Consumer</description>
+    <name>Kafka Parallel Listener Parent</name>
+    <description>Parent project for Kafka Parallel Listener and its dependencies</description>
+
+    <modules>
+        <module>parallel-consumer</module>
+        <module>kafka-parallel-listener</module>
+    </modules>
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
-    <dependencies>
-        <!-- Spring Kafka -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>astubbs-truth-generator</id>
+            <url>https://packagecloud.io/astubbs/truth-generator/maven2</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
-        <!-- Confluent Parallel Consumer — built locally from PR#908 fork -->
-        <dependency>
-            <groupId>io.confluent.parallelconsumer</groupId>
-            <artifactId>parallel-consumer-core</artifactId>
-            <version>0.5.3.4-SNAPSHOT</version>
-            <!--
-                Option A: if built locally via `mvn install`, remove scope/systemPath
-                          and it will be found in ~/.m2 automatically.
-
-                Option B: if using a bundled jar in libs/ folder, uncomment below:
-            -->
-            <!--
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/parallel-consumer-core-0.5.3.4-SNAPSHOT.jar</systemPath>
-            -->
-        </dependency>
-
-        <!-- Autoconfiguration annotation processor -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>
