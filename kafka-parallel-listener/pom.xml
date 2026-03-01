@@ -1,15 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project>
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
+    <!-- SEM <parent> do Spring Boot -->
 
     <groupId>io.github.kafka.parallel</groupId>
     <artifactId>kafka-parallel-listener</artifactId>
@@ -21,27 +13,47 @@
 
     <properties>
         <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Versão MÍNIMA que você suporta para compilar -->
+        <spring-boot.version>3.2.0</spring-boot.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Importa o BOM apenas para gerenciar versões de COMPILAÇÃO -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-        <!-- Spring Kafka -->
+        <!-- CRÍTICO: scope=provided — quem fornece é a APP, não a lib -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+            <scope>provided</scope>
         </dependency>
 
-        <!-- Confluent Parallel Consumer — built locally from submodule -->
+        <!-- Sua dependência real (transitiva para o consumidor) -->
         <dependency>
             <groupId>io.confluent.parallelconsumer</groupId>
             <artifactId>parallel-consumer-core</artifactId>
             <version>0.5.3.4-SNAPSHOT</version>
         </dependency>
 
-        <!-- Autoconfiguration annotation processor -->
+        <!-- Processors: optional = não vaza para o consumidor -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure-processor</artifactId>
@@ -51,18 +63,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
