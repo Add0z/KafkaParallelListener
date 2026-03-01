@@ -119,3 +119,4 @@ dependency-reduced-pom.xml
 
 # Submodule build artifacts
 parallel-consumer/target/
+.vscode/

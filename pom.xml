@@ -13,7 +13,6 @@
     <description>Parent project for Kafka Parallel Listener and its dependencies</description>
 
     <modules>
-        <module>parallel-consumer</module>
         <module>kafka-parallel-listener</module>
     </modules>
 
